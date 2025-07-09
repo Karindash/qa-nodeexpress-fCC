@@ -54,6 +54,11 @@ myDB(async client => {
     res.render('profile', { username: req.user.username });
   })
 
+  app.route('/logout').get((req, res) => {
+    req.logout();
+    res.redirect('/');
+  })
+
   passport.use(new LocalStrategy((username, password, done) => {
     myDataBase.findOne({ username: username }, (err, user) => {
       console.log(`User ${username} attempted to log in.`);
@@ -72,7 +77,7 @@ myDB(async client => {
     myDB.findOne({ _id: new ObjectID(id) }, (err, doc) => {
       done(null, doc);
     })
-  })  
+  })
 }).catch(err => {
   app.route('/').get((req, res) => {
     res.render('index', { title: err, message: 'Unable to connect to database' });
