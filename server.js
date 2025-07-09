@@ -1,10 +1,11 @@
 'use strict';
 require('dotenv').config();
 const express = require('express');
+const objectID = require('mongodb');
 const myDB = require('./connection');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
 const session = require('express-session');
-
+const passport = require('passport');
 const app = express();
 
 app.use((req, res, next) => {
@@ -24,6 +25,9 @@ app.use(session({
   cookie: { secure: false }
 }))
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 fccTesting(app); // For fCC testing purposes
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use(express.json());
@@ -33,6 +37,16 @@ app.route('/').get((req, res) => {
   // Change the response to render the Pug template
   res.render('index', { title: 'Hello', message: 'Please log in' });
 });
+
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+})
+
+passport.deserializeUser((id, done) => {
+  myDB.findOne({ _id: new ObjectID(id) }, (err, doc) => {
+    done(null, null);
+  })
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
